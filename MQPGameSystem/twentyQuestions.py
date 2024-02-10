@@ -1,9 +1,10 @@
 from flask import render_template, redirect, url_for
 import random
 
-global askedQuestions, characterToGuess, numQuestions, characters, gameState, userQuestions
+global askedQuestions, characterToGuess, numQuestions, characters, gameState, userQuestions, usrQcpuA
 numQuestions = 5
 numGuesses = 0
+usrQcpuA = ('','')
 
 characters = {
     'mario':        {'man', 'human', 'hero', 'videoGame', 'nintendo', 'job', 'plumber', 'mainCharacter', 'transform'},
@@ -40,20 +41,22 @@ def StartGame(charNotToPick = ''):
 
 #Handles user's submitted questions
 def AskQuestion(userQuestion):
-    global askedQuestions, numQuestions, gameState, userQuestions
+    global askedQuestions, numQuestions, gameState, userQuestions, usrQcpuA
     askedQuestions += 1    
 
-    if(askedQuestions >= numQuestions):                  #check if game should end based on number of questions
+    if(askedQuestions >= numQuestions):                     #check if game should end based on number of questions
         gameState = 2
         answer = "You're out of guesses! Who do you think I am thinking of?"
+        usrQcpuA = (userQuestion,answer)                    #Store in tuple for personality bot
         return render_template("TwentyQuestionsTwo.html", answer=answer, firstGuess=True)
-    else:                                                #user has questions left
+    else:                                                   #user has questions left
         #determine if attribute is true for character
         answer = "No"
         if(userQuestion in characterAttributes):
             answer = "Yes"
+        usrQcpuA = (userQuestion,answer)                    #Store in tuple for personality bot
         answer = userQuestion + " : " + answer
-        userQuestions.update({userQuestion: answer})      #add user question and CPU answer to dict to show user at the end
+        userQuestions.update({userQuestion: answer})        #add user question and CPU answer to dict to show user at the end
         return render_template("TwentyQuestionsTwo.html", answer=answer)
 
 #Handles when the user guesses the character
