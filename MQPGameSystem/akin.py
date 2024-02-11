@@ -1,6 +1,4 @@
-from flask import render_template, redirect, url_for
 import akinator
-import time
 
 aki = akinator.Akinator()
 difficulty = 80
@@ -18,12 +16,11 @@ def GameManager(userAnswer):
     if gameState == 1:                     #game in progress
         return ProgressGame(userAnswer)
     if gameState == 2:                     #checking user guess
-        render_template("TwentyQuestions.html", showAllButtons=False)
         return IsRight(userAnswer)
     if gameState == 3:                     #end message and replay
         return ContinueGame(userAnswer)
     else:
-        StartGame()
+        return StartGame()
 
 #Starts game of 20 Questions with the robot as the guesser
 def StartGame():
@@ -40,7 +37,7 @@ def StartGame():
     except:                 #Handle aki timeout error
         aki = akinator.Akinator()
         question = aki.start_game('en', True)
-    return render_template("TwentyQuestions.html", question=question, showAllButtons = True)
+    return question
     
 #Gets next question as well as gives user answer to aki. 
 #If user out of questions, change to end game screen
@@ -53,8 +50,8 @@ def ProgressGame(answer):
         return StartGame()                                                      #Ends old game and starts new one
     if aki.progression <= difficulty and numQuestions > askedQuestions:         #check if game should end based on number of questions
         cpuQusrA = (question,answer)
-        question = aki.answer(answer)                                           #pass user answer to aki
-        return render_template("TwentyQuestions.html", question=question, showAllButtons = True)
+        question = aki.answer(answer)
+        return (question, True, True)
     else:
         question = aki.answer(answer)
         return __EndGame()
@@ -76,12 +73,11 @@ def __EndGame():
     
     #Handle case where only innapropriate guesses are given
     if(valid_guess == -1):
-        return render_template("TwentyQuestions.html", question="Were you thinking of something innapropriate?")
-
-        #Format answer and description
+        return ("Were you thinking of something innapropriate?", True, False)
+    #Format answer and description
     picture = aki.guesses[valid_guess]['absolute_picture_path']
     question = "Were you thinking of: " + aki.guesses[valid_guess]['name'] + " " + aki.guesses[valid_guess]['description'] + "? "
-    return render_template("TwentyQuestions.html", question=question, picture=picture)
+    return (question, False, False, picture)
 
 #check if robot guessed what the user was thinking
 #Input: String: 'y' for yes or any other string for no
@@ -89,13 +85,12 @@ def __EndGame():
 def IsRight(question):
     global gameState
     gameState = 3
-
     if question == "y" or question =="probably":
         question = "Yay!"
     else:
         question = "Dang!"
     question += "\nWould you like to continue playing?"
-    return render_template("TwentyQuestions.html", question=question, hidePicture = True)
+    return (question, True, False, True)
 
 
 #Prompt user to replay
@@ -103,6 +98,6 @@ def IsRight(question):
 #Output: redirect to TwentyQuestionsTwo or homepage
 def ContinueGame(question):
     if question == 'y':
-        return redirect(url_for('TwentyQuestionsTwo'))
+        return 'TwentyQuestionsTwo'
     else:
-        return redirect(url_for('index')) #Go back to menu
+        return 'index'

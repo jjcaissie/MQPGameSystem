@@ -48,31 +48,49 @@ def settings():
 @app.route("/TwentyQuestions.html", methods=["POST", "GET"])
 def TwentyQuestions():
     global gameState, isServerPaused
-    #while isServerPaused == True:
-    #    time.sleep(1)
+    gameState = cpuGuessingState
     if request.method == "POST":
-        gameState = cpuGuessingState
         user_answer = request.form["userAnswer"]
-        return akin.GameManager(user_answer, isServerPaused)
+        data = akin.GameManager(user_answer)
+        time.sleep(1)   #NEED TO CODE ACTUAL SOLUTION AT SOME POINT
+        while(isServerPaused == True):
+            time.sleep(1)
+        if isinstance(data, str):
+            return redirect(url_for(data))
+        elif(len(data) == 3):
+            return render_template("TwentyQuestions.html", question=data[0], hidePicture = data[1], showAllButtons = data[2])
+        else:
+            return render_template("TwentyQuestions.html", question=data[0], hidePicture = data[1], showAllButtons = data[2], picture = data[3])
     else:
         game_thread = threading.Thread(target=akin.StartGame)
         game_thread.start()
-        return akin.StartGame()
+        question = akin.StartGame()
+        return render_template("TwentyQuestions.html", question=question, hidePicture = True, showAllButtons = True)
 
 #Loads TwentyQuestions page where user is guessing
 @app.route("/TwentyQuestionsTwo.html", methods=["POST", "GET"])
 def TwentyQuestionsTwo():
     global gameState, isServerPaused
-    #while isServerPaused == True:
-    #    time.sleep(1)
+    gameState = usrGuessingState
     if request.method == "POST":
-        gameState = usrGuessingState
         userQuestion = request.form["question"]
         userSkipped = request.form["skip"]
         if(userSkipped == "True"):
             twentyQuestions.SkipQuestions()
-        return twentyQuestions.GameManager(userQuestion)
-    return twentyQuestions.StartGame()
+        data = twentyQuestions.GameManager(userQuestion)
+        time.sleep(2)   #NEED TO CODE ACTUAL SOLUTION AT SOME POINT
+        while(isServerPaused == True):
+            time.sleep(1) 
+        if isinstance(data, str):
+            return redirect(url_for(data))
+        elif(len(data) == 4):
+            return render_template("TwentyQuestionsTwo.html", answer=data[0], firstGuess=data[1], secondGuess=data[2], promptReplay = data[3])
+        else:
+            return render_template("TwentyQuestionsTwo.html", answer=data[0], firstGuess=data[1], secondGuess=data[2], characters=data[3],userQuestions=data[4])
+    data = twentyQuestions.StartGame()
+    return render_template('TwentyQuestionsTwo.html', answer=data)
+
+
 
 #Hosts on local network on port 5000
 def HostServer():

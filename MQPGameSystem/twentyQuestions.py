@@ -1,4 +1,3 @@
-from flask import render_template, redirect, url_for
 import random
 
 global askedQuestions, characterToGuess, numQuestions, characters, gameState, userQuestions, usrQcpuA
@@ -22,9 +21,9 @@ def GameManager(userQuestion):
         return AskQuestion(userQuestion)
     if gameState == 2:
         if(userQuestion == 'y'):    #user selected to continue
-            return redirect(url_for('TwentyQuestions'))
+            return 'TwentyQuestions'
         elif(userQuestion == 'n'):  #user selected to discontinue
-            return redirect(url_for('index'))
+            return 'index'
         else:                       #user is submitting a guess
             return GuessCharacter(userQuestion)
 
@@ -36,8 +35,7 @@ def StartGame(charNotToPick = ''):
     numGuesses = 0
     gameState = 1
     userQuestions = {}
-    answer = "I'm thinking of a character. Guess who!"
-    return render_template('TwentyQuestionsTwo.html', answer=answer)
+    return "I'm thinking of a character. Guess who!"
 
 #Handles user's submitted questions
 def AskQuestion(userQuestion):
@@ -48,7 +46,7 @@ def AskQuestion(userQuestion):
         gameState = 2
         answer = "You're out of guesses! Who do you think I am thinking of?"
         usrQcpuA = (userQuestion,answer)                    #Store in tuple for personality bot
-        return render_template("TwentyQuestionsTwo.html", answer=answer, firstGuess=True)
+        return (answer, True, False, False)
     else:                                                   #user has questions left
         #determine if attribute is true for character
         answer = "No"
@@ -57,7 +55,7 @@ def AskQuestion(userQuestion):
         usrQcpuA = (userQuestion,answer)                    #Store in tuple for personality bot
         answer = userQuestion + " : " + answer
         userQuestions.update({userQuestion: answer})        #add user question and CPU answer to dict to show user at the end
-        return render_template("TwentyQuestionsTwo.html", answer=answer)
+        return (answer, False, False, False)
 
 #Handles when the user guesses the character
 def GuessCharacter(userGuess):
@@ -67,10 +65,10 @@ def GuessCharacter(userGuess):
         if(numGuesses == 0):
             answer = "That's not it! I think you need my help."
             numGuesses+=1
-            return render_template("TwentyQuestionsTwo.html", answer=answer, secondGuess=True, characters=characters, userQuestions=userQuestions)
+            return (answer, False, True, characters, userQuestions)
         answer = "That's not it! I was thinking of " + characterToGuess +"! Would you like to continue playing?"
-        return render_template("TwentyQuestionsTwo.html", answer=answer, promptReplay=True)     #User did not guess correctly on second try
-    return render_template("TwentyQuestionsTwo.html", answer=answer, promptReplay=True)         #User guessed correctly
+        return (answer, False, False, True)     #User did not guess correctly on second try
+    return (answer, False, False, True)         #User guessed correctly
 
 #Gets character except for the one passed in. Useful so CPU does not pick same character twice
 def GetCharacter(notToPick):
