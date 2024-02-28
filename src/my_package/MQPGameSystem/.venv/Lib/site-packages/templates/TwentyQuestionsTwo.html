@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title> 20 Questions </title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='portrait.css')}}"/>
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+</head>
+
+<body>
+    <button class="main-menu-button" onclick="promptMainMenu()">Main Menu</button>
+    <h2 id = "questionBox" style="background-color: rgba(0,0,0,0.8); font-size: 30px; text-align: center">{{ answer | safe }}</h2>
+    <ul>
+        <form action="#" method="post" id ="answer-form">
+            {% if firstGuess %}
+                <input type="text" id="txtUserGuess" style="width: 90%;">
+            {% elif secondGuess %}
+                <input type="text" id="txtUserGuess" style="width: 90%; display: none;">
+                <select id = "cbSecondUserGuess" onchange="cbChangeSecondGuess()">
+                    <option value="" disabled selected>List of Fruits</option>
+                    {% for fruit in fruits %}
+                        <option value>{{ fruit }}</option>
+                    {% endfor %}
+                </select>
+                <select id="cbUserQuestions">
+                    <option value="" disabled selected>List of Past Questions</option>
+                    {% for key, value in userQuestions.items() %}
+                        <option value disabled>{{ value }}</option>
+                    {% endfor %}
+                </select>
+            {% elif promptReplay %}
+                <button class="game-button" onclick="setValue('y')" name="submit_button">Yes</button>
+                <button class="game-button" onclick="setValue('n')" name="submit_button">No</button>
+            {% else %}
+                <select id="cbContainer" style="margin-bottom: 50px;">
+                    <optgroup label="Color of the Exterior" style="background-color: rgba(50,54,89,1)">
+                        <option value="red outside">Red Exterior?</option>
+                        <option value="orange outside">Orange Exterior?</option>
+                        <option value="yellow outside">Yellow Exterior?</option>
+                        <option value="green outside">Green Exterior?</option>
+                        <option value="blue outside">Blue Exterior?</option>
+                        <option value="purple outside">Purple Exterior?</option>
+                        <option value="white outside">White Exterior?</option>
+                        <option value="clear outside">Clear Exterior?</option>
+                    </optgroup>
+                    <optgroup label="Color of the Interior" style="background-color: rgba(50,54,89,1)">
+                        <option value="red inside">Red Interior?</option>
+                        <option value="orange inside">Orange Interior?</option>
+                        <option value="yellow inside">Yellow Interior?</option>
+                        <option value="green inside">Green Interior?</option>
+                        <option value="blue inside">Blue Interior?</option>
+                        <option value="purple inside">Purple Interior?</option>
+                        <option value="white inside">White Interior?</option>
+                        <option value="clear inside">Clear Interior?</option>
+                    </optgroup>
+                    <optgroup label ="Shape of Fruit" style="background-color: rgba(50,54,89,1)">
+                        <option value="large">Large?</option>
+                        <option value="medium">Medium?</option>
+                        <option value="small">Small?</option>
+                        <option value="long">Long?</option>
+                        <option value="round">Round?</option>
+                        <option value="cluster">Clustered?</option>
+                        <option value="oblong">Oblong?</option>
+                        <option value="star">Star?</option>
+                        <option value="flat">Flat?</option>
+                    </optgroup>
+                    <optgroup label="Traits of Exterior" style="background-color: rgba(50,54,89,1)">
+                        <option value="skin">Has Skin?</option>
+                        <option value="peel">Has Peel?</option>
+                        <option value="rind">Has Rind?</option>
+                        <option value="thick">Thick?</option>
+                        <option value="waxy">Waxy?</option>
+                        <option value="smooth">Smooth?</option>
+                        <option value="spiky">Spiky?</option>
+                        <option value="porous">Porous?</option>
+                    <optgroup label="Traits of Interior" style="background-color: rgba(50,54,89,1)">
+                        <option value="juicy">Juicy?</option>
+                        <option value="tender">Tender?</option>
+                        <option value="crisp">Crisp?</option>
+                        <option value="crunchy">Crunchy?</option>
+                        <option value="pulpy">Pulpy?</option>
+                        <option value="creamy">Creamy?</option>
+                        <option value="tart">Tart?</option>
+                    <optgroup label="Climate" style="background-color: rgba(50,54,89,1)">
+                        <option value="temperate">Temperate?</option>
+                        <option value="tropical">Tropical?</option>
+                        <option value="subtropical">Subtropical?</option>
+                    <optgroup label="Plant" style="background-color: rgba(50,54,89,1)">
+                        <option value="bush">Bush?</option>
+                        <option value="tree">Tree?</option>
+                        <option value="vine">Vine?</option>                      
+                    </optgroup>
+                </select>
+            {% endif %}
+            <p><input type="hidden" name = "question" id = "question" value = ""></p>
+            <p><input type="hidden" name = "skip" id = "skip" value = ""></p>
+            {% if firstGuess or secondGuess %}
+                <button type = button class="game-button" onclick="submitGuess()" name="submit_button">Submit Guess</button>
+            {% elif not promptReplay %}
+                <button class="game-button" onclick="submitQuestion()" name="submit_button">Submit Question</button>
+                <button type = button class="game-button" onclick="promptSkip()">Ready to Guess Fruit</button>
+            {% endif %}
+        </form>
+        <script>
+            //Send value to server
+            function setValue(value)
+            {
+                document.getElementById("question").value = value;
+            }
+
+            //Send comboBox value to server
+            function submitQuestion()
+            {
+                comboBox = document.getElementById("cbContainer");
+                comboBoxSelected = comboBox.options[comboBox.selectedIndex];
+                selectedOption = comboBoxSelected.value;
+                setValue(selectedOption);
+            }
+
+            //Send user's fruit guess to server
+            function submitGuess()
+            {
+                userGuess = document.getElementById("txtUserGuess").value
+                if(userGuess.trim() !== '')
+                {
+                    setValue(userGuess)
+                    document.getElementById("answer-form").submit();
+                }
+            }
+
+            //Send user's fruit guess to server
+            function cbChangeSecondGuess()
+            {
+                comboBox = document.getElementById("cbSecondUserGuess");
+                comboBoxSelected = comboBox.options[comboBox.selectedIndex];
+                selectedOptionText = comboBoxSelected.text;
+
+                txt = document.getElementById("txtUserGuess");
+                txt.value = selectedOptionText;
+            }
+            
+            //Confirm if user wants to go to main menu
+            function promptMainMenu()
+            {
+                if(confirm("Are you sure? Progress will not be saved")==true)
+                {
+                    window.open('/',"_self");
+                }
+            }
+
+            //Confirm if user wants to skip the rest of their questions
+            function promptSkip()
+            {
+                if(confirm("Are you sure? You still have questions available")==true)
+                {
+                    document.getElementById("skip").value = "True"
+                    document.getElementById("answer-form").submit();
+                }
+            }
+        </script>
+    </ul>
+</body>
+</html>

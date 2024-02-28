@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title> Games </title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='portrait.css')}}"/>
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+</head>
+
+<body>
+   <nav id="main_nav">
+   <button class="game-button" onclick="promptMainMenu()" style="height: fit-content; width: 98%; margin: 5px; align-self: center;">Main Menu</button>
+    <h2 style="margin: 4px; text-align: center; font-size: x-large; font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;">How to play 20Questions:</h2>
+      <h4 style="margin: 4px; font-size: large; font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif">
+         User will take turns with the robot thinking of a character, 
+         that the other player will have to guess. The guesser has a set
+         number of yes/no questions to ask in order to narrow down the 
+         characters to guess from. After the guesser has asked all their
+         questions, they must guess the character. If they guess correctly,
+         they win.</h4>
+ </nav>
+    <div id="content">
+      <script>
+         function promptMainMenu()
+         {
+            window.open('/',"_self");
+         }
+      </script>
+   <footer></footer>
+    </div>
+</body>
+</html>
