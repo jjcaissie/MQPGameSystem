@@ -4,6 +4,7 @@ from flask import Flask, render_template, request, redirect, url_for
 import threading
 import akin
 import twentyQuestions
+import time
 
 app = Flask(__name__)
 app.secret_key ='1082rb1p298v1nm28934yvnp1812vg790n01vnh8912vr7nh'
@@ -67,23 +68,26 @@ def TwentyQuestions():
     gameState = cpuGuessingState
     if request.method == "POST":
         user_answer = request.form["userAnswer"]
+        sendEvent.clear()           
         data = akin.GameManager(user_answer)
-        sendEvent.set()             #Signal that data is ready to send
-        getEvent.wait()             #Signal that data has been retrieved
-        getEvent.clear()            #Reset signal
+        sendEvent.set()
+        getEvent.wait()             
         #render or redirect HTML 
         if isinstance(data, str):
             del akin.aki
-            return redirect(url_for(data))
-        elif(len(data) == 3):       #If user asked question
-            return render_template("TwentyQuestions.html", question=chatbotResponse+'<br>'+data[0], hidePicture = data[1], showAllButtons = data[2])
-        else:                       #If akin is guessing
-            return render_template("TwentyQuestions.html", question=chatbotResponse+'<br>'+data[0], hidePicture = data[1], showAllButtons = data[2], picture = data[3])
+            response = redirect(url_for(data))
+        elif(len(data) == 3):      
+            response = render_template("TwentyQuestions.html", question=chatbotResponse+'<br>'+data[0], hidePicture = data[1], showAllButtons = data[2])
+        else:                      
+            response = render_template("TwentyQuestions.html", question=chatbotResponse+'<br>'+data[0], hidePicture = data[1], showAllButtons = data[2], picture = data[3])
     else:
         game_thread = threading.Thread(target=akin.StartGame)
         game_thread.start()
         question = akin.StartGame()
-        return render_template("TwentyQuestions.html", question=chatbotResponse+'<br>'+question, hidePicture = True, showAllButtons = True)
+        response = render_template("TwentyQuestions.html", question=question+'<br>'+chatbotResponse, hidePicture = True, showAllButtons = True)
+    getEvent.clear()
+    sendEvent.set()
+    return response
 
 #Loads TwentyQuestions page where user is guessing
 @app.route("/TwentyQuestionsTwo.html", methods=["POST", "GET"])
@@ -95,25 +99,27 @@ def TwentyQuestionsTwo():
         userSkipped = request.form["skip"]
         if(userSkipped == "True"):
             twentyQuestions.SkipQuestions()
+        sendEvent.clear()           
         data = twentyQuestions.GameManager(userQuestion)
         sendEvent.set()
         getEvent.wait()
+        
         if isinstance(data, str):
-            return redirect(url_for(data))
+            response = redirect(url_for(data))
         elif(len(data) == 4):
-            return render_template("TwentyQuestionsTwo.html", answer=chatbotResponse+'<br>'+data[0], firstGuess=data[1], secondGuess=data[2], promptReplay = data[3])
+            response = render_template("TwentyQuestionsTwo.html", answer=chatbotResponse+'<br>'+data[0], firstGuess=data[1], secondGuess=data[2], promptReplay = data[3])
         else:
-            return render_template("TwentyQuestionsTwo.html", answer=chatbotResponse+'<br>'+data[0], firstGuess=data[1], secondGuess=data[2], fruits=data[3],userQuestions=data[4])
-    data = twentyQuestions.StartGame()
-    return render_template('TwentyQuestionsTwo.html', answer=chatbotResponse+'<br>'+data)
+            response = render_template("TwentyQuestionsTwo.html", answer=chatbotResponse+'<br>'+data[0], firstGuess=data[1], secondGuess=data[2], fruits=data[3],userQuestions=data[4])
+    else:
+        data = twentyQuestions.StartGame()
+        response = render_template('TwentyQuestionsTwo.html', answer=chatbotResponse+'<br>'+data)
+    getEvent.clear()    
+    sendEvent.set()
+    return response
 
 #Hosts on local network on port 80
 def HostServer():
+    getEvent.wait()
+    print("Hosting server on port 80")
     app.run(host="0.0.0.0", port=80)
-    ShutdownServer()
-
-def ShutdownServer():
-    print("Shutting down")
-    #Put code here at some point
-
 

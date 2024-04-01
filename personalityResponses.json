@@ -1,6 +1,6 @@
 {
     "origin" : [],
-    "random-response" : ["#greeting#", "#farewell#", "#neutral-game#", "#happy-game#", "#smirk-game#", "#confused-game#", "#surprised#", "#impatient#" ,"#concern#"],
+    "random-response" : ["#neutral-game#", "#happy-game#", "#smirk-game#", "#confused-game#", "#surprised#", "#impatient#" ,"#concern#"],
     "greeting" : ["Welcome!", "Hello!"],
     "farewell" : ["Take care!"],
     "neutral-game" : ["..."],

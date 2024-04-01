@@ -25,10 +25,11 @@ userQuestions = {}
 
 #Decides action based on gameState
 def GameManager(userQuestion):
-    global gameState
+    global gameState, gameData
     if gameState == 1:
         return AskQuestion(userQuestion)
     if gameState == 2:
+        gameData = ""
         if(userQuestion == 'y'):    #user selected to continue
             return 'TwentyQuestions'
         elif(userQuestion == 'n'):  #user selected to discontinue
@@ -70,15 +71,18 @@ def AskQuestion(userQuestion):
 
 #Handles when the user guesses the fruit
 def GuessFruit(userGuess):
-    global numGuesses, userQuestions, fruits
+    global numGuesses, userQuestions, fruits, gameData
     answer = "You guessed it! I was thinking of " + fruitToGuess + "! Would you like to continue playing?"
     if(userGuess.lower() != fruitToGuess):
         if(numGuesses == 0):
             answer = "That's not it! I think you need my help."
             numGuesses+=1
+            gameData = answer
             return (answer, False, True, fruits, userQuestions)
         answer = "That's not it! I was thinking of " + fruitToGuess +"! Would you like to continue playing?"
+        gameData = answer
         return (answer, False, False, True)     #User did not guess correctly on second try
+    gameData = answer
     return (answer, False, False, True)         #User guessed correctly
 
 #Gets fruit except for the one passed in. Useful so CPU does not pick same fruit twice

@@ -25,7 +25,7 @@ def generateResponseConfidence(val):
         response = "happy-game"
     elif(val >= 75):
         response = "smirk-game"
-    return responsesGrammar.flatten(response)
+    return responsesGrammar.flatten("#" + response + "#")
 
 def generateResponseChangeConfidence(val):
     response = ""
@@ -43,25 +43,14 @@ def generateResponseChangeConfidence(val):
         response = "smirk-game" 
     elif(val >= 40):
         response = "surprised"
-    return responsesGrammar.flatten(response)
+    return responsesGrammar.flatten("#" + response + "#")
 
 def generateResponse(confidence, changeConfidence, numQuestions, askedQuestions):
     expected_threshold = -80 * (askedQuestions / (2 * numQuestions)) + 80
 
-    print("ASKED QUESTIONS")
-    print(askedQuestions)
-
-    print("NUM QUESTIONS")
-    print(numQuestions)
-
-    print("EXPECTED THRESHOLD:")
-    print(expected_threshold)
-
-    print("CONF VAL")
-    print(confidence)
-
-    print("DEL CONF VAL")
-    print(changeConfidence)
+    print("EXPECTED THRESHOLD: ", expected_threshold)
+    print("CONF VAL: ", confidence)
+    print("CHANGE CONF VAL: ", changeConfidence)
 
     text = "no response found"
     if confidence > expected_threshold:
@@ -70,3 +59,10 @@ def generateResponse(confidence, changeConfidence, numQuestions, askedQuestions)
         text = generateResponseChangeConfidence(changeConfidence)
 
     return text
+
+def generateResponse2():
+    text = responsesGrammar.flatten("#random-response#")
+    return text
+
+def continueGame():
+    return "\nWould you like to continue playing?"

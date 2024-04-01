@@ -64,10 +64,10 @@ def ProgressGame(answer):
 
 #Handle akinator's guesses
 def __EndGame():
-    global gameState
+    global gameState, gameData
     gameState = 2
     aki.win()
-
+    gameData = "makingGuess"
     #filter innapropriate answers out
     valid_guess = -1
     for count, guess in enumerate(aki.guesses):
@@ -89,13 +89,13 @@ def __EndGame():
 #Input: String: 'y' for yes or any other string for no
 #Output: String: "Yay!" if user inputs 'y' or "Dang!" otherwise
 def IsRight(question):
-    global gameState
+    global gameState, gameData
+    gameData = "playAgain"
     gameState = 3
     if question == "y" or question =="probably":
         question = "Yay!"
     else:
         question = "Dang!"
-    question += "\nWould you like to continue playing?"
     return (question, True, False, True)
 
 
@@ -103,6 +103,8 @@ def IsRight(question):
 #Input: String: 'y' for yes or any other string to return to homepage
 #Output: redirect to TwentyQuestionsTwo or homepage
 def ContinueGame(question):
+    global gameData
+    gameData = question
     if question == 'y':
         return 'TwentyQuestionsTwo'
     else:

@@ -2,6 +2,7 @@ import gameSystem
 import platform
 import threading
 import personalityRunner
+import time
 
 if platform.system() == "Linux":
     import rospy
@@ -16,9 +17,6 @@ if platform.system() == "Linux":
         rospy.loginfo("Data is being sent")
         pub.publish(publishString)
         rate.sleep()
-
-__stateGame = 0
-__stateChatbot = 1
 
 gameData = (" ","")             #Data being sent to personality bot. formatted like (question, answer)
 chatbotData = ""                #Data being sent to game system. Should be the robot's response given gameData
@@ -43,48 +41,35 @@ def GetConfidenceValue():
         changeInConfidenceValue = 0.0
         confidenceValue = 0.0
 
-
 def main():
-    global gameData, chatbotData, confidenceValue, changeInConfidenceValue
-    currentState = __stateChatbot
+    global gameData, chatbotData, confidenceValue
+    global changeInConfidenceValue
+    sendEvent.clear()
+    getEvent.set()
     gameThread = threading.Thread(target=gameSystem.HostServer)
     gameThread.start()
-
     while True:
-        while currentState == __stateGame:                              #If in one of the game states
-            gameSystem.setChatbotResponse(chatbotData)                  #Send chatbot response to gameSystem
-            sendEvent.set()                                             #Signal that data has been sent
-            if gameData != gameSystem.getData():                                #Flag for when data is altered WHAT IF DATA IS THE SAME?               
-                getEvent.wait()                                                 #Data is ready to be retrieved
-                getEvent.clear()
-                gameData = gameSystem.getData()                                 #Read data from game
-                GetConfidenceValue()                                            #Get confidence value
-                print("CHANGE CONFIDENCE VALUE")
-                print(changeInConfidenceValue)
-                print("CURRENT CONFIDENCE VALUE")
-                print(confidenceValue)
-
-                print(chatbotData)
-                currentState = __stateChatbot                                   #Give control to chatbot
-
-        while currentState == __stateChatbot:                           #If in the chatbot state
-            if gameSystem.gameState == gameSystem.usrGuessingState:         #If game state is in cpu guess state
+        if gameData != gameSystem.getData():                                               
+            getEvent.wait()                                                 
+            getEvent.clear()
+            gameData = gameSystem.getData()                                 
+            GetConfidenceValue()                                            
+            print("CHANGE CONFIDENCE VALUE: ", changeInConfidenceValue)
+            print("CURRENT CONFIDENCE VALUE: ", confidenceValue)
+            if(gameData == "makingGuess"):  #Eventually generate different responses
                 chatbotData = personalityRunner.generateResponse(confidenceValue, changeInConfidenceValue, numQuestions(), askedQuestions())
-                if __name__ == '__main__':
-                    try:
-                        if(platform.system() == "Linux"):
-                            __publishToNode__(chatbotData)
-                    except rospy.ROSInterruptException:
-                        pass
-
-            elif gameSystem.gameState == gameSystem.cpuGuessingState:   #If game state is in usr guess state
+            elif(gameData == "playAgain"):
+                chatbotData = personalityRunner.continueGame()
+            elif(gameSystem.gameState == gameSystem.cpuGuessingState):
                 chatbotData = personalityRunner.generateResponse(confidenceValue, changeInConfidenceValue, numQuestions(), askedQuestions())
-                if __name__ == '__main__':
-                    try:
-                        if(platform.system() == "Linux"):
-                            __publishToNode__(chatbotData)
-                    except rospy.ROSInterruptException:
-                        pass
-            currentState = __stateGame                                  #Give control to game system
-
+            else:
+                chatbotData = personalityRunner.generateResponse2()
+            print(chatbotData)
+            gameSystem.setChatbotResponse(chatbotData)                      #Send chatbot response to gameSystem
+            try:
+                if(platform.system() == "Linux"):
+                    __publishToNode__(chatbotData)
+            except rospy.ROSInterruptException:
+                pass
+            sendEvent.set()
 main()
