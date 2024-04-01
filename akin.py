@@ -10,6 +10,11 @@ gameState = 0
 question = aki.start_game('en', True)   
 askedQuestions = 0
 
+def getNumQuestions():
+    return numQuestions
+def getAskedQuestions():
+    return askedQuestions
+
 #Decides action based on gameState
 def GameManager(userAnswer):
     global gameState    

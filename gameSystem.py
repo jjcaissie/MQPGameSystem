@@ -21,6 +21,11 @@ def setChatbotResponse(string):
     global chatbotResponse
     chatbotResponse = string
 
+def getNumQuestions():
+    return akin.getNumQuestions()
+def getAskedQuestions():
+    return akin.getAskedQuestions()
+
 def getData():
     if gameState == cpuGuessingState:
         return akin.gameData
